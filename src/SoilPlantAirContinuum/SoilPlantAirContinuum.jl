@@ -7,6 +7,7 @@ using EmeraldConstants: GAS_R, GRAVITY, K_STEFAN, K_VON_KARMAN, M_H₂O, P_ATM, 
 using PkgUtility: numerical∫, tinfo
 using WaterPhysics: latent_heat_vapor, relative_diffusive_coefficient, saturation_vapor_pressure
 
+using ..CanopyLayers: LAND_2017, LAND_2021
 using ..CanopyLayers: Canopy4RT, CanopyOpticals, CanopyRads, IncomingRadiation, LeafBios, RTCache, RTDimensions, SIF_fluxes!, SoilOpticals, SolarAngles, WaveLengths, big_leaf_partition,
       canopy_fluxes!, canopy_geometry!, canopy_matrices!, fluspect!, short_wave!, thermal_fluxes!
 using ..Photosynthesis: AbstractPhotoModelParaSet, AirLayer, C3CLM, C3ParaSet, C4ParaSet, GCO₂Mode, Leaf, leaf_photosynthesis!, leaf_rd!, leaf_temperature_dependence!

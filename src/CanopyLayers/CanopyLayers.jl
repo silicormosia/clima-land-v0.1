@@ -7,17 +7,20 @@ using DocStringExtensions: TYPEDFIELDS, TYPEDEF
 using EmeraldConstants: AVOGADRO, H_PLANCK, K_STEFAN, LIGHT_SPEED, T₂₅
 using LinearAlgebra: mul!, pinv
 using MAT: matread
+using NetcdfIO: read_nc
 using PkgUtility: numerical∫
 using QuadGK: quadgk
 using SpecialFunctions: expint
 using Statistics: mean
-using TextIO: read_csv
 
 
-# define the constants
-const FILE_SUN  = artifact"land_model_spectrum_V1" * "/sun.mat";
-const OPTI_2017 = artifact"land_model_spectrum_V1" * "/Optipar2017_ProspectD.mat";
-const OPTI_2021 = artifact"land_model_spectrum_V1" * "/Optipar2021_ProspectPRO_CX.mat";
+# define the constants (do not use V1 which contains the raw mat code from the SCOPE model)
+const LAND_2017_V4 = artifact"land_model_spectrum_V4" * "/clima_land_spectra_2017.nc";
+const LAND_2017_V5 = artifact"land_model_spectrum_V5" * "/clima_land_spectra_2017.nc";
+const LAND_2021_V4 = artifact"land_model_spectrum_V4" * "/clima_land_spectra_2021.nc";
+const LAND_2021_V5 = artifact"land_model_spectrum_V5" * "/clima_land_spectra_2021.nc";
+const LAND_2017    = LAND_2017_V5;
+const LAND_2021    = LAND_2021_V5;
 const SOIL_BNDS = [0.36 0.61 0.25 0.50; 0.34 0.57 0.23 0.46;
                    0.32 0.53 0.21 0.42; 0.31 0.51 0.20 0.40;
                    0.30 0.49 0.19 0.38; 0.29 0.48 0.18 0.36;
@@ -28,7 +31,6 @@ const SOIL_BNDS = [0.36 0.61 0.25 0.50; 0.34 0.57 0.23 0.46;
                    0.18 0.29 0.09 0.18; 0.16 0.27 0.08 0.16;
                    0.14 0.25 0.07 0.14; 0.12 0.23 0.06 0.12;
                    0.10 0.21 0.05 0.10; 0.08 0.16 0.04 0.08];
-const SOIL_GSV  = artifact"land_model_spectrum_V1" * "/GSV.csv";
 
 
 # export public types

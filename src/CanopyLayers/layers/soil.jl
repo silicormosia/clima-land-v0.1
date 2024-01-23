@@ -151,9 +151,9 @@ function fit_soil_mat!(soil::SoilOpticals{FT}, wls::WaveLengths{FT}, ref_PAR::FT
     soil.ρ_NIR = ref_NIR;
 
     # solve for weights using pinv
-    soil.ρ_SW_raw[32:end] .= ref_NIR;
-    soil.ρ_SW_raw[1:31] .= ref_PAR;
-    soil.SW_vec_4 .= pinv(soil.SW_mat_raw_4) * soil.ρ_SW_raw;
+    soil.ρ_SW[wls.iPAR] .= ref_PAR;
+    soil.ρ_SW[wls.iNIR] .= ref_NIR;
+    soil.SW_vec_4 .= pinv(soil.SW_mat_4) * soil.ρ_SW;
 
     # update vectors in soil
     mul!(soil.ρ_SW, soil.SW_mat_4, soil.SW_vec_4);
@@ -178,14 +178,14 @@ function fit_soil_mat!(soil::SoilOpticals{FT}, wls::WaveLengths{FT}, ref_PAR::FT
     soil.ρ_NIR = ref_NIR;
 
     # solve for weights using pinv
-    soil.ρ_SW_raw[32:end] .= ref_NIR;
-    soil.ρ_SW_raw[1:31] .= ref_PAR;
-    soil.SW_vec_4 .= pinv(soil.SW_mat_raw_4) * soil.ρ_SW_raw;
+    soil.ρ_SW[wls.iPAR] .= ref_PAR;
+    soil.ρ_SW[wls.iNIR] .= ref_NIR;
+    soil.SW_vec_4 .= pinv(soil.SW_mat_4) * soil.ρ_SW;
 
     # solve for weights
     @inline _fit(x::Vector{FT}) where {FT<:AbstractFloat} = (
-        mul!(soil.ρ_SW_raw, soil.SW_mat_raw_4, x);
-        _diff = ( mean(soil.ρ_SW_raw[1:31]) - ref_PAR ) ^ 2 + mean( abs.(soil.ρ_SW_raw[32:end] .- ref_NIR) ) ^ 2;
+        mul!(soil.ρ_SW, soil.SW_mat_4, x);
+        _diff = ( mean(soil.ρ_SW[wls.iPAR]) - ref_PAR ) ^ 2 + mean( abs.(soil.ρ_SW[wls.iNIR] .- ref_NIR) ) ^ 2;
         return -_diff
     );
 
@@ -219,14 +219,14 @@ function fit_soil_mat!(soil::SoilOpticals{FT}, wls::WaveLengths{FT}, ref_PAR::FT
     soil.ρ_NIR = ref_NIR;
 
     # solve for weights using pinv
-    soil.ρ_SW_raw[32:end] .= ref_NIR;
-    soil.ρ_SW_raw[1:31] .= ref_PAR;
-    soil.SW_vec_4 .= pinv(soil.SW_mat_raw_4) * soil.ρ_SW_raw;
+    soil.ρ_SW[wls.iPAR] .= ref_PAR;
+    soil.ρ_SW[wls.iNIR] .= ref_NIR;
+    soil.SW_vec_4 .= pinv(soil.SW_mat_4) * soil.ρ_SW;
 
     # solve for weights
     @inline _fit(x::Vector{FT}) where {FT<:AbstractFloat} = (
-        mul!(soil.ρ_SW_raw, soil.SW_mat_raw_4, x);
-        _diff = ( mean(soil.ρ_SW_raw[1:31]) - ref_PAR ) ^ 2 + ( mean(soil.ρ_SW_raw[32:end]) - ref_NIR ) ^ 2;
+        mul!(soil.ρ_SW, soil.SW_mat_4, x);
+        _diff = ( mean(soil.ρ_SW[wls.iPAR]) - ref_PAR ) ^ 2 + ( mean(soil.ρ_SW[wls.iNIR]) - ref_NIR ) ^ 2;
         return -_diff
     );
 
@@ -260,9 +260,9 @@ function fit_soil_mat!(soil::SoilOpticals{FT}, wls::WaveLengths{FT}, ref_PAR::FT
     soil.ρ_NIR = ref_NIR;
 
     # solve for weights using pinv
-    soil.ρ_SW_raw[32:end] .= ref_NIR;
-    soil.ρ_SW_raw[1:31] .= ref_PAR;
-    soil.SW_vec_2 .= pinv(soil.SW_mat_raw_2) * soil.ρ_SW_raw;
+    soil.ρ_SW[wls.iPAR] .= ref_PAR;
+    soil.ρ_SW[wls.iNIR] .= ref_NIR;
+    soil.SW_vec_2 .= pinv(soil.SW_mat_2) * soil.ρ_SW;
 
     # update vectors in soil
     mul!(soil.ρ_SW, soil.SW_mat_2, soil.SW_vec_2);
@@ -289,14 +289,14 @@ function fit_soil_mat!(soil::SoilOpticals{FT}, wls::WaveLengths{FT}, ref_PAR::FT
     soil.ρ_NIR = ref_NIR;
 
     # solve for weights using pinv
-    soil.ρ_SW_raw[32:end] .= ref_NIR;
-    soil.ρ_SW_raw[1:31] .= ref_PAR;
-    soil.SW_vec_2 .= pinv(soil.SW_mat_raw_2) * soil.ρ_SW_raw;
+    soil.ρ_SW[wls.iPAR] .= ref_PAR;
+    soil.ρ_SW[wls.iNIR] .= ref_NIR;
+    soil.SW_vec_2 .= pinv(soil.SW_mat_2) * soil.ρ_SW;
 
     # solve for weights
     @inline _fit(x::Vector{FT}) where {FT<:AbstractFloat} = (
-        mul!(soil.ρ_SW_raw, soil.SW_mat_raw_2, x);
-        _diff = ( mean(soil.ρ_SW_raw[1:31]) - ref_PAR ) ^ 2 + mean( abs.(soil.ρ_SW_raw[32:end] .- ref_NIR) ) ^ 2;
+        mul!(soil.ρ_SW, soil.SW_mat_2, x);
+        _diff = ( mean(soil.ρ_SW[wls.iPAR]) - ref_PAR ) ^ 2 + mean( abs.(soil.ρ_SW[wls.iNIR] .- ref_NIR) ) ^ 2;
         return -_diff
     );
 
