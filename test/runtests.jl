@@ -7,15 +7,15 @@ using Land.StomataModels
 using Pkg.Artifacts
 using PkgUtility
 using Test
-using TextIO: read_csv
 
 
 ENV["JULIA_LOG_LEVEL"] = "WARN"
 
 
-include("test_CanopyLayers.jl"   )
-include("test_Photosynthesis.jl" )
-include("test_PlantHydraulics.jl")
-include("test_StomataModels.jl"  )
-include("test_SPAC.jl"           )
-include("test_Land.jl"           )
+@testset verbose = true "CliMA Land v0.1" begin
+    include("test_CanopyLayers.jl");
+    include("test_Photosynthesis.jl");
+    include("test_PlantHydraulics.jl");
+    include("test_StomataModels.jl");
+    include("test_SPAC.jl");
+end;
