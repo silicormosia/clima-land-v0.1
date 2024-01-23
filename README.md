@@ -14,15 +14,11 @@ Another note is that this v0.1 CliMA Land is relatively outdated, given that my 
 
 ### Run CliMA Land for a single site (v0.1)
 
-1. Download all the files in folder examples into a folder,
+1. Download all the files including the source code in folder examples into a folder,
 ```shell
-$ mkdir Test-CliMA-Land
-$ cd Test-CliMA-Land
-$ wget https://github.com/silicormosia/clima-land-v0.1/raw/main/examples/debug.jld2
-$ wget https://github.com/silicormosia/clima-land-v0.1/raw/main/examples/debug.nc
-$ wget https://github.com/silicormosia/clima-land-v0.1/raw/main/examples/example.jl
-$ wget https://github.com/silicormosia/clima-land-v0.1/raw/main/examples/Manifest.toml
-$ wget https://github.com/silicormosia/clima-land-v0.1/raw/main/examples/Project.toml
+$ git clone https://github.com/silicormosia/clima-land-v0.1
+$ cd clima-land-v0.1
+$ cd examples
 ```
 
 2. initialize the Julia environment
