@@ -47,6 +47,8 @@ Base.@kwdef mutable struct WaveLengths{FT}
     iWLF::Vector{Int} = findall( (WL .>= minwlf) .& (WL .<= maxwlf) )
     "index of wlPAR in WL"
     iPAR::Vector{Int} = findall( (WL .>= minwlPAR) .& (WL .<= maxwlPAR) )
+    "index of wlPAR in WL for 700 nm (regular definition)"
+    iPAR_700::Vector{Int} = findall( (WL .>= minwlPAR) .& (WL .<= 700) )
     "index of wlNIR in WL"
     iNIR::Vector{Int} = findall( (WL .>= minwlNIR) .& (WL .<= maxwlNIR) )
 
@@ -58,6 +60,8 @@ Base.@kwdef mutable struct WaveLengths{FT}
     WL_iPAR::Vector{FT} = WL[iPAR];
     "Differential wave length for PAR"
     dWL_iPAR::Vector{FT} = dWL[iPAR];
+    "Differential wave length for PAR"
+    dWL_iPAR_700::Vector{FT} = dWL[iPAR_700];
     "Differential wave length for iWLE"
     dWL_iWLE::Vector{FT} = dWL[iWLE];
 
