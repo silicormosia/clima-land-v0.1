@@ -11,12 +11,12 @@ Initialize the RT parameters for a given
 """
 function initialize_spac_canopy!(node::SPACMono{FT}) where {FT<:AbstractFloat}
     # 0.1 create variables required
-    @unpack angles, envirs, in_rad, leaves_rt, n_canopy, plant_ps, photo_set, rt_con, soil_opt, wl_set = node;
+    (; angles, envirs, in_rad, leaves_rt, n_canopy, plant_ps, photo_set, rt_con, soil_opt, wl_set) = node;
     canopy_rt = node.canopy_rt;
     can_opt = node.can_opt;
     can_rad = node.can_rad;
     plant_hs = node.plant_hs;
-    fraction_sl::Array{FT,1} = repeat(canopy_rt.lidf, outer=[canopy_rt.nAzi]) / length(canopy_rt.lazitab);
+    fraction_sl::Vector{FT} = repeat(canopy_rt.lidf, outer=[canopy_rt.nAzi]) / length(canopy_rt.lazitab);
     n_sl = length(canopy_rt.lidf) * length(canopy_rt.lazitab);
 
     # fluspect the canopy layers
@@ -99,6 +99,23 @@ function update_LAI!(node::SPACMono{FT}, lai::FT) where {FT<:AbstractFloat}
     for _iHS in node.plant_hs.leaves
         _iHS.area = node.la / node.n_canopy;
     end
+
+    return nothing
+end
+
+
+
+
+"""
+    update_Kf!(node::SPACMono{FT}, Kf::FT) where {FT<:AbstractFloat}
+
+Update Kf and PSII_max
+"""
+function update_Kf!(node::SPACMono{FT}, Kf::FT) where {FT<:AbstractFloat}
+    for _iPS in node.plant_ps
+        _iPS.ps.Kf = Kf;
+        _iPS.ps.maxPSII = _iPS.ps.Kp_max / (_iPS.ps.Kp_max + _iPS.ps.Kf + _iPS.ps.Kd);
+    end;
 
     return nothing
 end
