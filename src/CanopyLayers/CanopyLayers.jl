@@ -37,7 +37,7 @@ const SOIL_BNDS = [0.36 0.61 0.25 0.50; 0.34 0.57 0.23 0.46;
 export Canopy4RT, CanopyOpticals, CanopyRads, IncomingRadiation, LeafBios, LeafOpticals, RTCache, RTDimensions, SoilOpticals, SolarAngles, WaveLengths
 
 # export public functions
-export big_leaf_partition, canopy_fluxes!, canopy_geometry!, canopy_matrices!, diffusive_S, fluspect!, initialize_rt_module, leaf_fluxes, short_wave!, SIF_fluxes!, thermal_fluxes!
+export canopy_fluxes!, canopy_geometry!, canopy_matrices!, diffusive_S, fluspect!, initialize_rt_module, leaf_fluxes, short_wave!, SIF_fluxes!, thermal_fluxes!
 
 # Vegetation indices
 export BLUE, EVI, EVI2, LSWI, NDVI, NIR, NIRv, NIRvES, RED, REF_WL, SIF_683, SIF_740, SIF_757, SIF_771, SIF_WL, SWIR
@@ -64,8 +64,6 @@ include("types/solarangles.jl");
 include("types/soilopticals.jl");
 
 include("initialize/all.jl");
-
-include("bigleaf/bigleaf.jl");
 
 include("layers/canopyfluxes.jl");
 include("layers/canopygeometry.jl");

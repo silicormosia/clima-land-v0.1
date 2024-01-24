@@ -1,16 +1,4 @@
-# Test big leaf canopy model
 @testset verbose = true "CanopyLayers" begin
-    @testset "Big leaf model" begin
-        for FT in [Float32, Float64]
-            for result in [ big_leaf_partition(FT(3), FT(30), FT(1000)),
-                            big_leaf_partition(FT(2), FT(30), FT(1000)),
-                            big_leaf_partition(FT(1), FT(30), FT(1000)) ]
-                @test PkgUtility.FT_test(result, FT);
-                @test PkgUtility.NaN_test(result);
-            end;
-        end;
-    end;
-
     @testset "SCOPE model" begin
         for FT in [Float32, Float64]
             collections = initialize_rt_module(FT; nLayer=20, LAI=3);
