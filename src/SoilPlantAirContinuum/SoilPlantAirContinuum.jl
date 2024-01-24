@@ -36,5 +36,7 @@ include("layers/windspeed.jl");
 include("planet/atmpressure.jl");
 include("planet/solarangle.jl");
 
+include("wind.jl");
+
 
 end # module
