@@ -16,6 +16,8 @@ mutable struct SoilOpticals{FT}
     T::FT
     "Soil color class"
     color::Int
+    "Whether to expand from broadband to hyperspectral"
+    hyperspectral::Bool
 
     # broad band showrtwave albedo
     "Shortwave albedo for NIR"
@@ -65,7 +67,7 @@ SoilOpticals(wls::WaveLengths{FT}) where {FT<:AbstractFloat} = (
     _res_4 = FT[read_nc(opti_file, "GSV_1") read_nc(opti_file, "GSV_2") read_nc(opti_file, "GSV_3") read_nc(opti_file, "GSV_4")];
     _res_2 = FT[_res_4[:,1] _res_4[:,end]];
 
-    return SoilOpticals{FT}(T₂₅(FT), 1, FT(0.2), FT(0.2), ones(FT,nWL).*FT(0.2),
+    return SoilOpticals{FT}(T₂₅(FT), 1, true, FT(0.2), FT(0.2), ones(FT,nWL).*FT(0.2),
                             ones(FT,nWLF)*FT(0.2), ones(FT,nWL).*FT(0.8),
                             _res_4, _res_2, ones(FT,4), ones(FT,2),
                             FT[0.1], FT(0.5), FT(0.5), FT(0.5), FT(0.5))
