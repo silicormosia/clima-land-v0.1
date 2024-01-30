@@ -6,7 +6,6 @@ using ConstrainedRootSolvers: ReduceStepMethodND, SolutionToleranceND, find_peak
 using DocStringExtensions: TYPEDFIELDS, TYPEDEF
 using EmeraldConstants: AVOGADRO, H_PLANCK, K_STEFAN, LIGHT_SPEED, T₂₅
 using LinearAlgebra: mul!, pinv
-using MAT: matread
 using NetcdfIO: read_nc
 using PkgUtility: numerical∫
 using QuadGK: quadgk

@@ -13,9 +13,13 @@ ENV["JULIA_LOG_LEVEL"] = "WARN"
 
 
 @testset verbose = true "CliMA Land v0.1" begin
-    include("test_CanopyLayers.jl");
-    include("test_Photosynthesis.jl");
-    include("test_PlantHydraulics.jl");
-    include("test_StomataModels.jl");
-    include("test_SPAC.jl");
+    include("modules/CanopyLayers.jl");
+    include("modules/Photosynthesis.jl");
+    include("modules/PlantHydraulics.jl");
+    include("modules/StomataModels.jl");
+    include("modules/SPAC.jl");
+end;
+
+@test verbose = true "CliMA Land Features" begin
+    include("features/clm5_mode.jl");
 end;
