@@ -12,6 +12,14 @@ A struct of leaf biological parameters
 $(TYPEDFIELDS)
 """
 Base.@kwdef mutable struct LeafBios{FT}
+    # whether to prescribe the leaf reflectance and transmission
+    "Prescribe leaf reflectance and transmission"
+    prescribe::Bool = false
+    "Prescribed leaf reflectance at PAR and NIR ranges"
+    ρs::Vector{FT} = [0.07, 0.35]
+    "Prescribed leaf transmission at PAR and NIR ranges"
+    τs::Vector{FT} = [0.05, 0.10]
+
     # local storage of dimension information
     "Number of wave length"
     nWL::Int = 10

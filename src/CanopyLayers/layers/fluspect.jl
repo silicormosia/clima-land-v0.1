@@ -221,5 +221,15 @@ function fluspect!(leaf::LeafBios{FT}, wls::WaveLengths{FT}; APAR_car::Bool = tr
     leaf.Mb = gn;
     leaf.Mf = fn;
 
+    # use the prescribed leaf reflectance at PAR and NIR ranges
+    # we changed it here rather than at the beginning because we need to use the SIF matrices
+    if leaf.prescribe
+        leaf.ρ_SW[wls.iPAR] = leaf.ρs[1];
+        leaf.τ_SW[wls.iPAR] = leaf.τs[1];
+        leaf.ρ_SW[wls.iNIR] = leaf.ρs[2];
+        leaf.τ_SW[wls.iNIR] = leaf.τs[2];
+        leaf.α_SW = 1 .- leaf.τ_SW .- leaf.ρ_SW;
+    end;
+
     return nothing
 end
