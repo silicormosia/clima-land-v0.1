@@ -71,7 +71,7 @@
         end;
     end;
 
-    @testset "StomtaModels --- empirical formulations" begin
+    @testset "Empirical formulations" begin
         for FT in [Float32, Float64]
             envir  = AirLayer{FT}();
             leaf_3 = Leaf{FT}();
@@ -111,7 +111,7 @@
         end;
     end;
 
-    @testset "StomtaModels --- stomatal models" begin
+    @testset "Stomatal models" begin
         for FT in [Float32, Float64]
             envir  = AirLayer{FT}();
             leaf_3 = Leaf{FT}();

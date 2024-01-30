@@ -1,4 +1,4 @@
-@testset "SoilPlantAirContinuum" begin
+@testset verbose = true "SoilPlantAirContinuum" begin
     @testset "Atmosheric pressure" begin
         for FT in [Float32, Float64]
             h = FT(1000);

@@ -1,7 +1,6 @@
 module SoilPlantAirContinuum
 
 using ConstrainedRootSolvers: ReduceStepMethodND, SolutionToleranceND, find_peak
-using DataFrames: DataFrame
 using DocStringExtensions: TYPEDFIELDS
 using EmeraldConstants: GAS_R, GRAVITY, K_STEFAN, K_VON_KARMAN, M_H₂O, P_ATM, RT₂₅, T₀, T₂₅, YEAR_D, ρ_H₂O
 using PkgUtility: numerical∫, tinfo
