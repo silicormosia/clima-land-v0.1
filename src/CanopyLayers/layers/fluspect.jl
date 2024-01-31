@@ -46,7 +46,6 @@ function fluspect!(leaf::LeafBios{FT}, wls::WaveLengths{FT}; APAR_car::Bool = tr
     else
         leaf.kChlrel = (Cab*Kab)./(Kall*N.+eps(FT));
     end
-    leaf.kChlrel_old = (Cab*Kab)./(Kall*N.+eps(FT));
     #println(typeof(Kall))
     # Adding eps() here to keep it stable and NOT set to 1 manually when Kall=0 (ForwardDiff won't work otherwise)
     tau = (1 .-Kall).*exp.(-Kall) .+ Kall.^2 .*real.(expint.(Kall.+eps(FT)))
@@ -229,6 +228,7 @@ function fluspect!(leaf::LeafBios{FT}, wls::WaveLengths{FT}; APAR_car::Bool = tr
         leaf.ρ_SW[wls.iNIR] .= leaf.ρs[2];
         leaf.τ_SW[wls.iNIR] .= leaf.τs[2];
         leaf.α_SW .= 1 .- leaf.τ_SW .- leaf.ρ_SW;
+        leaf.kChlrel .= 1;
     end;
 
     return nothing

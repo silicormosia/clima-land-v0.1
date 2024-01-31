@@ -59,8 +59,6 @@ Base.@kwdef mutable struct LeafBios{FT}
     α_SW::Vector{FT}  = zeros(FT, nWL)
     "Relative absorbtion by Chlorophyll+Car"
     kChlrel::Vector{FT} = zeros(FT, nWL)
-    "Relative absorbtion by Chlorophyll"
-    kChlrel_old::Vector{FT} = zeros(FT, nWL)
     "Fluorescence excitation matrix backwards"
     Mb::Matrix{FT} = zeros(FT,(nWLF,nWLE))
     "Fluorescence excitation matrix forwards"
