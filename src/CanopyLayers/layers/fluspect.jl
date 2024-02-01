@@ -15,7 +15,7 @@ Computes leaf optical properties (reflectance and transittance) based on
 - `wls` [`WaveLengths`](@ref) type struct
 - `APAR_car` If true, include Car absorption in APAR for photosynthesis
 """
-function fluspect!(leaf::LeafBios{FT}, wls::WaveLengths{FT}; APAR_car::Bool = true) where {FT<:AbstractFloat}
+function fluspect!(leaf::LeafBios{FT}, wls::WaveLengths{FT}; APAR_car::Bool = false) where {FT<:AbstractFloat}
     # ***********************************************************************
     # Jacquemoud S., Baret F. (1990), PROSPECT: a model of leaf optical
     # properties spectra; Remote Sens. Environ.; 34:75-91.
