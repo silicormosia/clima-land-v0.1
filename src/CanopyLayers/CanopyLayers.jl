@@ -14,12 +14,12 @@ using Statistics: mean
 
 
 # define the constants (do not use V1 which contains the raw mat code from the SCOPE model)
-const LAND_2017_V4 = artifact"land_model_spectrum_V4" * "/clima_land_spectra_2017.nc";
-const LAND_2017_V5 = artifact"land_model_spectrum_V5" * "/clima_land_spectra_2017.nc";
-const LAND_2021_V4 = artifact"land_model_spectrum_V4" * "/clima_land_spectra_2021.nc";
-const LAND_2021_V5 = artifact"land_model_spectrum_V5" * "/clima_land_spectra_2021.nc";
-const LAND_2017    = LAND_2017_V5;
-const LAND_2021    = LAND_2021_V5;
+const LAND_2017_V6 = artifact"land_model_spectrum_V6" * "/clima_land_spectra_2017.nc";
+const LAND_2017_V7 = artifact"land_model_spectrum_V7" * "/clima_land_spectra_2017.nc";
+const LAND_2021_V6 = artifact"land_model_spectrum_V6" * "/clima_land_spectra_2021.nc";
+const LAND_2021_V7 = artifact"land_model_spectrum_V7" * "/clima_land_spectra_2021.nc";
+const LAND_2017    = LAND_2017_V6;
+const LAND_2021    = LAND_2021_V6;
 const SOIL_BNDS = [0.36 0.61 0.25 0.50; 0.34 0.57 0.23 0.46;
                    0.32 0.53 0.21 0.42; 0.31 0.51 0.20 0.40;
                    0.30 0.49 0.19 0.38; 0.29 0.48 0.18 0.36;
