@@ -27,7 +27,6 @@ include("types/spacmono.jl");
 include("layers/beta.jl");
 include("layers/layer_fluxes.jl");
 include("layers/initializert.jl");
-include("layers/measures.jl");
 include("layers/test_diurnal.jl");
 include("layers/test_soil.jl");
 include("layers/windspeed.jl");
@@ -35,6 +34,7 @@ include("layers/windspeed.jl");
 include("planet/atmpressure.jl");
 include("planet/solarangle.jl");
 
+include("quantities/measures.jl");
 include("quantities/photosynthesis.jl");
 
 include("wind.jl");
