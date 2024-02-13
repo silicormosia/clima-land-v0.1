@@ -55,12 +55,16 @@
             SoilPlantAirContinuum.initialize_spac_canopy!(node);
             SoilPlantAirContinuum.layer_fluxes!(node);
             SoilPlantAirContinuum.layer_fluxes!(node, FT(30));
+            ags = SoilPlantAirContinuum.ag_per_layer(node);
+            @test PkgUtility.NaN_test(ags);
             @test PkgUtility.NaN_test(node);
             @test true;
             node = SoilPlantAirContinuum.SPACMono{FT}(opti_file=CanopyLayers.LAND_2017);
             SoilPlantAirContinuum.initialize_spac_canopy!(node);
             SoilPlantAirContinuum.layer_fluxes!(node);
             SoilPlantAirContinuum.layer_fluxes!(node, FT(30));
+            ags = SoilPlantAirContinuum.ag_per_layer(node);
+            @test PkgUtility.NaN_test(ags);
             @test PkgUtility.NaN_test(node);
             @test true;
         end;

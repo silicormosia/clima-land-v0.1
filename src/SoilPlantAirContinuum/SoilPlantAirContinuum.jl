@@ -35,6 +35,8 @@ include("layers/windspeed.jl");
 include("planet/atmpressure.jl");
 include("planet/solarangle.jl");
 
+include("quantities/photosynthesis.jl");
+
 include("wind.jl");
 
 
