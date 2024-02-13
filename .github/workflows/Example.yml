@@ -1,8 +1,8 @@
 name: Example
 on:
+  merge_group:
   pull_request:
-    branches:
-      - v0.1
+  workflow_dispatch:
 
 jobs:
   test:
