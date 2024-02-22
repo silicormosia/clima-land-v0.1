@@ -6,7 +6,10 @@ Return the gross photosynthesis rate per layer, given
 - `node` [`SPACMono`](@ref) type struct
 
 """
-A_GROSS(node::SPACMono{FT}) where {FT} = FT[iPS.Ag' * iPS.LAIx for iPS in node.plant_ps];
+A_GROSS(node::SPACMono{FT}) where {FT} = [FT[iPS.Ag' * iPS.LAIx for iPS in node.plant_ps],
+                                          FT[iPS.Ac' * iPS.LAIx for iPS in node.plant_ps],
+                                          FT[iPS.Aj' * iPS.LAIx for iPS in node.plant_ps],
+                                          FT[iPS.Ap' * iPS.LAIx for iPS in node.plant_ps]];
 
 
 """
