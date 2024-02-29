@@ -8,7 +8,7 @@ using Dates: isleapyear
 using JLD2: load
 
 using NetcdfIO: read_nc, save_nc!
-using PkgUtility: month_days, nanmean
+using PkgUtility: month_days, nanmean, numerical∫
 
 using Land.CanopyLayers: EVI, FourBandsFittingHybrid, NDVI, NIRv, SIF_WL, SIF_740, fit_soil_mat!
 using Land.Photosynthesis: C3CLM, use_clm_td!
@@ -251,15 +251,15 @@ end;
 
 """
 
-    run_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
+    non_steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
 
-Run CliMA Land in a time step, given
+Run CliMA Land in a time step in non-steady-state mode, given
 - `spac` Soil plant air continuum struct
 - `dfr` Weather driver dataframe row
 - `ind` Time index
 
 """
-function run_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
+function non_steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
     # read the data out of dataframe row to reduce memory allocation
     df_dif::FT = dfr.RAD_DIF;
     df_dir::FT = dfr.RAD_DIR;
@@ -313,6 +313,80 @@ end;
 
 """
 
+    steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
+
+Run CliMA Land in a time step in steady-state mode, given
+- `spac` Soil plant air continuum struct
+- `dfr` Weather driver dataframe row
+- `ind` Time index
+
+"""
+function steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
+    # read the data out of dataframe row to reduce memory allocation
+    df_dif::FT = dfr.RAD_DIF;
+    df_dir::FT = dfr.RAD_DIR;
+
+    # compute beta factor (based on Psoil, so canopy does not matter)
+    # note here that
+    #     - if the beta is applied to g1 use it in the prognostic_gsw! function
+    #     - if the beta is applied to Vcmax, rescale Vcmax and use a beta = 1 in the stomatal_conductance function
+    # in this example, we assumed it is applied to g1
+    βm = spac_beta_max(spac, beta);
+
+    # calculate leaf level flux per canopy layer
+    for i in 1:spac.n_canopy
+        iEN = spac.envirs[i];
+        iPS = spac.plant_ps[i];
+
+        # set gsw to 0 or iterate for 30 times to find steady state solution
+        if df_dir + df_dif < 10
+            iPS.APAR .= 0;
+            iPS.g_sw .= 0;
+            gsw_control!(spac.photo_set, iPS, iEN);
+        else
+            last_sum_ag = -1;
+            last_sum_gl = -1;
+            for _ in 1:30
+                gas_exchange!(spac.photo_set, iPS, iEN, GswDrive());
+                prognostic_gsw!(iPS, iEN, spac.stomata_model, βm, FT(120));
+                gsw_control!(spac.photo_set, iPS, iEN);
+                sum_ag = numerical∫(iPS.Ag, iPS.LAIx);
+                sum_gl = numerical∫(iPS.g_lw, iPS.LAIx);
+
+                # break if the solution is converged
+                if isapprox(sum_ag, last_sum_ag; rtol = 0.001) && isapprox(sum_gl, last_sum_gl; rtol = 0.001)
+                    break;
+                else
+                    last_sum_ag = sum_ag;
+                    last_sum_gl = sum_gl;
+                end;
+            end;
+        end;
+    end;
+
+    # calculate the SIF if there is sunlight
+    if df_dir + df_dif >= 10
+        update_sif!(spac);
+        dfr.SIF683 = SIF_WL(spac.can_rad, spac.wl_set, FT(682.5));
+        dfr.SIF740 = SIF_740(spac.can_rad, spac.wl_set);
+        dfr.SIF757 = SIF_WL(spac.can_rad, spac.wl_set, FT(758.7));
+        dfr.SIF771 = SIF_WL(spac.can_rad, spac.wl_set, FT(770.0));
+        dfr.NDVI   = NDVI(spac.can_rad, spac.wl_set);
+        dfr.EVI    = EVI(spac.can_rad, spac.wl_set);
+        dfr.NIRv   = NIRv(spac.can_rad, spac.wl_set);
+    end;
+
+    # save the total flux into the DataFrame
+    dfr.F_H2O = T_VEG(spac);
+    dfr.F_CO2 = CNPP(spac);
+    dfr.F_GPP = GPP(spac);
+
+    return nothing
+end;
+
+
+"""
+
     run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String) where {FT<:AbstractFloat}
 
 Run CliMA Land at a site for the enture year, given
@@ -321,7 +395,7 @@ Run CliMA Land at a site for the enture year, given
 - `nc_out` File path to save the model output
 
 """
-function run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String) where {FT<:AbstractFloat}
+function run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String; steady_state::Bool = false) where {FT<:AbstractFloat}
     in_rad_bak = deepcopy(spac.in_rad);
     in_dir     = in_rad_bak.E_direct' * spac.wl_set.dWL / 1000;
     in_dif     = in_rad_bak.E_diffuse' * spac.wl_set.dWL / 1000;
@@ -334,7 +408,11 @@ function run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String) where {FT
     # iterate through the time steps
     for dfr in eachrow(df)
         prescribe_parameters!(spac, dfr, spac_mem, deepcopies);
-        run_time_step!(spac, dfr, beta_g);
+        if steady_state
+            steady_state_time_step!(spac, dfr, beta_g);
+        else
+            non_steady_state_time_step!(spac, dfr, beta_g);
+        end;
     end;
 
     # save simulation results to hard drive
@@ -347,4 +425,5 @@ end;
 @time dict = load("$(@__DIR__)/debug.jld2");
 @time wddf = prepare_wd(dict, "$(@__DIR__)/debug.nc");
 @time spac = prepare_spac(dict);
-@time run_model!(spac, wddf, "$(@__DIR__)/debug.output.nc");
+@time run_model!(spac, wddf, "$(@__DIR__)/debug.output.ss.nc"; steady_state = true);
+@time run_model!(spac, wddf, "$(@__DIR__)/debug.output.nss.nc"; steady_state = false);
