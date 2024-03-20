@@ -22,17 +22,18 @@ function short_wave!(can::Canopy4RT{FT}, can_opt::CanopyOpticals{FT}, can_rad::C
     sw_con = rt_con.sw_con;
 
     # 1. define some useful parameters
-    iLAI = LAI * Ω / nLayer;
+    iLAI = LAI / nLayer;
+    ciiLAI = LAI * Ω / nLayer;
 
     # 2. scattering and extinction coefficients to
     #    thin layer reflectances and transmittances
     # Eq. 17 in mSCOPE paper (changed here to compute real transmission)
     # this is the original equation: τ_ss = 1 - ks * iLAI;
-    τ_ss = exp(-ks * iLAI);
-    sw_con.τ_dd .= 1 .- can_opt.a .* iLAI;
-    sw_con.τ_sd .= sf   .* iLAI;
-    sw_con.ρ_dd .= sigb .* iLAI;
-    sw_con.ρ_sd .= sb   .* iLAI;
+    τ_ss = exp(-ks * ciiLAI);
+    sw_con.τ_dd .= 1 .- can_opt.a .* ciiLAI;
+    sw_con.τ_sd .= sf   .* ciiLAI;
+    sw_con.ρ_dd .= sigb .* ciiLAI;
+    sw_con.ρ_sd .= sb   .* ciiLAI;
     (; ρ_dd, ρ_sd, τ_dd, τ_sd) = sw_con;
 
     # 3. reflectance calculation

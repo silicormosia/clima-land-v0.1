@@ -16,8 +16,8 @@ function psofunction(K::FT, k::FT, Ω::FT, LAI::FT, q::FT, dso::FT, xl::FT) wher
     if dso != 0
         alf = dso / q * 2 / (k + K);
 
-        return exp( (K+k)*Ω*LAI*xl + sqrt(K*k)*Ω*LAI / alf * (1 - exp(xl*alf)) )
+        return Ω * exp( (K+k)*Ω*LAI*xl + sqrt(K*k)*Ω*LAI / alf * (1 - exp(xl*alf)) )
     else
-        return exp( (K + k -sqrt(K*k)) * Ω * LAI * xl )
+        return Ω * exp( (K + k -sqrt(K*k)) * Ω * LAI * xl )
     end
 end

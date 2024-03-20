@@ -51,11 +51,12 @@ function SIF_fluxes!(
     sf_con = rt_con.sf_con;
 
     # 1. define some useful parameters
-    iLAI = LAI * Ω / nLayer;
+    iLAI = LAI / nLayer;
+    ciiLAI = LAI * Ω / nLayer;
 
     # 2. calculate some useful parameters
-    sf_con.τ_dd .= 1 .- view(a, iWLF, :) .* iLAI;
-    sf_con.ρ_dd .= view(sigb, iWLF, :) .* iLAI;
+    sf_con.τ_dd .= 1 .- view(a, iWLF, :) .* ciiLAI;
+    sf_con.ρ_dd .= view(sigb, iWLF, :) .* ciiLAI;
 
     # 3. Compute mid layer Ps,Po,Pso
     #    Qso = (Pso[1:nLayer] + Pso[2:nLayer+1]) / 2;
@@ -190,8 +191,8 @@ function SIF_fluxes!(
         sf_con.Fdplu[:,i] .= sf_con.sigbEmin_shade .+ sf_con.sigfEplu_shade;
 
         # Total weighted fluxes
-        _qs_iLAI   = Qs[i] * iLAI;
-        _1_qs_iLAI = (1 - Qs[i]) * iLAI;
+        _qs_iLAI   = Qs[i] * ciiLAI;
+        _1_qs_iLAI = (1 - Qs[i]) * ciiLAI;
         sf_con.S⁻[:,i]   .= _qs_iLAI .* view(sf_con.Fsmin, :, i) .+ _1_qs_iLAI .* view(sf_con.Fdmin, :, i);
         sf_con.S⁺[:,i]   .= _qs_iLAI .* view(sf_con.Fsplu, :, i) .+ _1_qs_iLAI .* view(sf_con.Fdplu, :, i);
         sf_con.Femo[:,i] .= _qs_iLAI .* view(sf_con.piLs , :, i) .+ _1_qs_iLAI .* view(sf_con.piLd , :, i);

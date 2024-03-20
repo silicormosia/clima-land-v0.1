@@ -8,7 +8,7 @@ using Dates: isleapyear
 using JLD2: load
 
 using NetcdfIO: read_nc, save_nc!
-using PkgUtility: month_days, nanmean
+using PkgUtility: month_days, nanmean, numerical∫
 
 using Land.CanopyLayers: EVI, FourBandsFittingHybrid, NDVI, NIRv, SIF_WL, SIF_740, fit_soil_mat!
 using Land.Photosynthesis: C3CLM, use_clm_td!
@@ -31,19 +31,19 @@ Prepare weather driver dataframe to feed CliMA Land, given
 
 """
 function prepare_wd(dict::Dict, wd_file::String)
-    _df_in = read_nc(wd_file);
+    df_in = read_nc(wd_file);
 
     # compute T_MEAN based on the weather driver
-    _df_in[!,"CO2"]         .= 0.0;
-    _df_in[!,"Chlorophyll"] .= 0.0;
-    _df_in[!,"LAI"]         .= 0.0;
-    _df_in[!,"Vcmax"]       .= 0.0;
-    _df_in[!,"T_MEAN"]      .= 0.0;
-    for _i in eachindex(_df_in.T_MEAN)
-        if _i < 240
-            _df_in[_i,"T_MEAN"] = nanmean( max.(_df_in.T_AIR[1:_i], _df_in.T_LEAF[1:_i]) );
+    df_in[!,"CO2"]         .= 0.0;
+    df_in[!,"Chlorophyll"] .= 0.0;
+    df_in[!,"LAI"]         .= 0.0;
+    df_in[!,"Vcmax"]       .= 0.0;
+    df_in[!,"T_MEAN"]      .= 0.0;
+    for i in eachindex(df_in.T_MEAN)
+        if i < 240
+            df_in[i,"T_MEAN"] = nanmean( max.(df_in.T_AIR[1:i], df_in.T_LEAF[1:i]) );
         else
-            _df_in[_i,"T_MEAN"] = nanmean( max.(_df_in.T_AIR[_i-239:_i], _df_in.T_LEAF[_i-239:_i]) );
+            df_in[i,"T_MEAN"] = nanmean( max.(df_in.T_AIR[i-239:i], df_in.T_LEAF[i-239:i]) );
         end;
     end;
 
@@ -52,39 +52,39 @@ function prepare_wd(dict::Dict, wd_file::String)
     #     1. extropolate the data to 1D resolution
     #     2. extropolate the data to 1H resolution
     #
-    _year = dict["year"];
-    _days = isleapyear(_year) ? 366 : 365;
+    year = dict["year"];
+    days = isleapyear(year) ? 366 : 365;
     @inline nt_to_1h(label::String) = (
-        _dat_in = dict[label];
-        @assert length(_dat_in) in [366, 365, 53, 52, 46, 12, 1] "Dataset length not supported";
+        dat_in = dict[label];
+        @assert length(dat_in) in [366, 365, 53, 52, 46, 12, 1] "Dataset length not supported";
 
-        if length(_dat_in) == 1
-            _dat_1d = repeat([_dat_in;]; inner = _days);
-        elseif length(_dat_in) == 12
-            _dat_1d = [([repeat(_dat_in[_m:_m], month_days(_year, _m)) for _m in 1:12]...)...]
-        elseif length(_dat_in) == 46
-            _dat_1d = repeat(_dat_in; inner = 8)[1:_days]
-        elseif length(_dat_in) in [52,53]
-            _dat_1d = repeat([_dat_in;_dat_in[end]]; inner = 7)[1:_days]
-        elseif length(_dat_in) in [365,366]
-            _dat_1d = [_dat_in;_dat_in[end]][1:_days]
+        if length(dat_in) == 1
+            dat_1d = repeat([dat_in;]; inner = days);
+        elseif length(dat_in) == 12
+            dat_1d = [([repeat(dat_in[_m:_m], month_days(year, _m)) for _m in 1:12]...)...]
+        elseif length(dat_in) == 46
+            dat_1d = repeat(dat_in; inner = 8)[1:days]
+        elseif length(dat_in) in [52,53]
+            dat_1d = repeat([dat_in;dat_in[end]]; inner = 7)[1:days]
+        elseif length(dat_in) in [365,366]
+            dat_1d = [dat_in;dat_in[end]][1:days]
         end;
 
-        return repeat(_dat_1d; inner = 24)
+        return repeat(dat_1d; inner = 24)
     );
-    _df_in[!,"CO2"]         .= nt_to_1h("co2_concentration");
-    _df_in[!,"Chlorophyll"] .= nt_to_1h("chlorophyll");
-    _df_in[!,"CI"]          .= nt_to_1h("clumping_index");
-    _df_in[!,"LAI"]         .= nt_to_1h("leaf_area_index");
-    _df_in[!,"Vcmax"]       .= nt_to_1h("vcmax");
+    df_in[!,"CO2"]         .= nt_to_1h("co2_concentration");
+    df_in[!,"Chlorophyll"] .= nt_to_1h("chlorophyll");
+    df_in[!,"CI"]          .= nt_to_1h("clumping_index");
+    df_in[!,"LAI"]         .= nt_to_1h("leaf_area_index");
+    df_in[!,"Vcmax"]       .= nt_to_1h("vcmax");
 
     # add the fields to store outputs
-    for _label in DF_VARIABLES
-        _df_in[!,_label] .= 0.0;
+    for label in DF_VARIABLES
+        df_in[!,label] .= 0.0;
     end;
 
-    return _df_in
-end
+    return df_in
+end;
 
 
 
@@ -99,62 +99,59 @@ Create a SPAC, given
 """
 function prepare_spac(dict::Dict; FT = Float64)
     # read general information from dict
-    _lat = dict["latitude"];
-    _lon = dict["longitude"]
-    _sm = ESMMedlyn{FT}();
+    sm = ESMMedlyn{FT}();
 
     # use JULES soil depth 0.00 -- 0.10 -- 0.35 -- 1.00 -- 3.00 m, and assume 2 m deep root (z_root = -2) for all the sites
-    _soil_bounds = FT[0, -0.1, -0.35, -1, -3];
-    _z_canopy    = max(FT(0.1), dict["canopy_height"]);
-    _Δz          = _z_canopy / 20;
-    _air_bounds  = collect(0:_Δz:_z_canopy+2*_Δz);
-    _plant_hs    = create_tree(FT(-2), _z_canopy/2, _z_canopy, _soil_bounds, _air_bounds);
+    soil_bounds = FT[0, -0.1, -0.35, -1, -3];
+    z_canopy    = max(FT(0.1), dict["canopy_height"]);
+    Δz          = z_canopy / 20;
+    air_bounds  = collect(0:Δz:z_canopy+2*Δz);
+    plant_hs    = create_tree(FT(-2), z_canopy/2, z_canopy, soil_bounds, air_bounds);
 
     # create a SPACMono struct, redefine the wavelength limits for PAR if ePAR is true
-    _node = SPACMono{FT}(soil_bounds=_soil_bounds, air_bounds=_air_bounds, z_canopy=_z_canopy, z_root=-2, plant_hs=_plant_hs, latitude=_lat, longitude=_lon, stomata_model=_sm);
+    node = SPACMono{FT}(soil_bounds=soil_bounds, air_bounds=air_bounds, z_canopy=z_canopy, z_root=-2, plant_hs=plant_hs, latitude=dict["latitude"], longitude=dict["longitude"], stomata_model=sm);
 
-    for _iPS in _node.plant_ps
-        _iPS.g_min   = eps(FT);
-        _iPS.g_min25 = eps(FT);
-        _iPS.g_max   = 0.8;
-        _iPS.g_max25 = 0.8;
+    for iPS in node.plant_ps
+        iPS.g_min   = eps(FT);
+        iPS.g_min25 = eps(FT);
+        iPS.g_max   = 0.8;
+        iPS.g_max25 = 0.8;
     end;
 
     # update soil type information per layer
-    for _i in eachindex(_node.plant_hs.roots)
-        _α  = dict["soil_vg_α"][_i];
-        _n  = dict["soil_vg_n"][_i];
-        _Θr = dict["soil_vg_Θr"][_i];
-        _Θs = dict["soil_vg_Θs"][_i];
-        _node.plant_hs.roots[_i].sh = VanGenuchten{FT}(stype = "JULES", α = _α, n = _n, Θs = _Θs, Θr = _Θr);
+    for i in eachindex(node.plant_hs.roots)
+        α  = dict["soil_vg_α"][i];
+        n  = dict["soil_vg_n"][i];
+        Θr = dict["soil_vg_Θr"][i];
+        Θs = dict["soil_vg_Θs"][i];
+        node.plant_hs.roots[i].sh = VanGenuchten{FT}(stype = "JULES", α = α, n = n, Θs = Θs, Θr = Θr);
     end;
 
     # update leaf mass per area (from m² kg⁻¹ to g cm⁻²)
-    _lma = dict["leaf_mass_per_area"];
-    for leaf in _node.leaves_rt
-        leaf.Cm = _lma;
+    for leaf in node.leaves_rt
+        leaf.Cm = dict["leaf_mass_per_area"];
     end;
 
     # set up empirical model
-    if typeof(_sm) <: ESMMedlyn
-        _node.photo_set = C3CLM(FT);
-        _node.stomata_model.g1 = dict["g1_medlyn_c3"];
-        _node.stomata_model.g0 = 1e-3;
+    if typeof(sm) <: ESMMedlyn
+        node.photo_set = C3CLM(FT);
+        node.stomata_model.g1 = dict["g1_medlyn_c3"];
+        node.stomata_model.g0 = 1e-3;
     else
-        @warn "Stomatal model parameters are not initialized for $(typeof(_sm))";
+        @warn "Stomatal model parameters are not initialized for $(typeof(sm))";
     end;
 
     # update soil color class from CLM dataset
-    _node.soil_opt.color = dict["soil_color"];
+    node.soil_opt.color = dict["soil_color"];
 
     # update the Vcmax, Jmax, and Vpmax
-    update_VJRWW!(_node, nanmean(dict["vcmax"]));
+    update_VJRWW!(node, nanmean(dict["vcmax"]));
 
     # initialize the canopy RT model
-    initialize_spac_canopy!(_node);
+    initialize_spac_canopy!(node);
 
-    return _node
-end
+    return node
+end;
 
 
 """
@@ -166,7 +163,7 @@ Base.@kwdef mutable struct SPACMemory{FT<:AbstractFloat}
     chl::FT = -9999
     lai::FT = -9999
     vcm::FT = -9999
-end
+end;
 
 
 """
@@ -182,135 +179,119 @@ Prescibe parameters for the SPAC, given
 """
 function prescribe_parameters!(spac::SPACMono{FT}, dfr::DataFrameRow, mem::SPACMemory{FT}, deepcopies::Vector) where {FT<:AbstractFloat}
     # read the data out of dataframe row to reduce memory allocation
-    _df_atm::FT = dfr.P_ATM;
-    _df_chl::FT = dfr.Chlorophyll;
-    _df_cli::FT = dfr.CI;
-    _df_co2::FT = dfr.CO2;
-    _df_dif::FT = dfr.RAD_DIF;
-    _df_dir::FT = dfr.RAD_DIR;
-    _df_doy::FT = dfr.FDOY;
-    _df_lai::FT = dfr.LAI;
-    _df_sw1::FT = dfr.SWC_1;
-    _df_sw2::FT = dfr.SWC_2;
-    _df_sw3::FT = dfr.SWC_3;
-    _df_sw4::FT = dfr.SWC_4;
-    _df_tar::FT = dfr.T_AIR;
-    _df_tlf::FT = dfr.T_LEAF;
-    _df_tmn::FT = dfr.T_MEAN;
-    _df_vcm::FT = dfr.Vcmax;
-    _df_vpd::FT = dfr.VPD;
-    _df_wnd::FT = dfr.WIND;
+    df_atm::FT = dfr.P_ATM;
+    df_chl::FT = dfr.Chlorophyll;
+    df_cli::FT = dfr.CI;
+    df_co2::FT = dfr.CO2;
+    df_dif::FT = dfr.RAD_DIF;
+    df_dir::FT = dfr.RAD_DIR;
+    df_doy::FT = dfr.FDOY;
+    df_lai::FT = dfr.LAI;
+    df_sw1::FT = dfr.SWC_1;
+    df_sw2::FT = dfr.SWC_2;
+    df_sw3::FT = dfr.SWC_3;
+    df_sw4::FT = dfr.SWC_4;
+    df_tar::FT = dfr.T_AIR;
+    df_tlf::FT = dfr.T_LEAF;
+    df_tmn::FT = dfr.T_MEAN;
+    df_vcm::FT = dfr.Vcmax;
+    df_vpd::FT = dfr.VPD;
+    df_wnd::FT = dfr.WIND;
 
     # adjust optimum t based on 10 day moving average skin temperature
-    use_clm_td!(spac.photo_set, _df_tmn);
+    use_clm_td!(spac.photo_set, df_tmn);
 
     # if total LAI, Vcmax, or Chl changes, update them (add vertical Vcmax profile as well)
-    _trigger_lai::Bool = !isnan(_df_lai) && (_df_lai != mem.lai);
-    _trigger_vcm::Bool = !isnan(_df_vcm) && (_df_vcm != mem.vcm);
-    _trigger_chl::Bool = !isnan(_df_chl) && (_df_chl != mem.chl);
-    if _trigger_lai
-        update_LAI!(spac, _df_lai);
-        mem.lai = _df_lai;
+    trigger_lai::Bool = !isnan(df_lai) && (df_lai != mem.lai);
+    trigger_vcm::Bool = !isnan(df_vcm) && (df_vcm != mem.vcm);
+    trigger_chl::Bool = !isnan(df_chl) && (df_chl != mem.chl);
+    if trigger_lai
+        update_LAI!(spac, df_lai);
+        mem.lai = df_lai;
     end;
 
-    if _trigger_lai || _trigger_vcm
-        update_VJRWW!(spac, _df_vcm; expo = FT(0.3));
-        mem.vcm = _df_vcm;
+    if trigger_lai || trigger_vcm
+        update_VJRWW!(spac, df_vcm; expo = FT(0.3));
+        mem.vcm = df_vcm;
     end;
 
-    if _trigger_chl
-        update_Cab!(spac, _df_chl; cab_2_car = FT(1/7));
-        mem.chl = _df_chl;
+    if trigger_chl
+        update_Cab!(spac, df_chl; cab_2_car = FT(1/7));
+        mem.chl = df_chl;
     end;
 
     # update clumping index
-    spac.canopy_rt.Ω = _df_cli;
-    spac.canopy_rt.clump_a = _df_cli;
+    spac.canopy_rt.Ω = df_cli;
+    spac.canopy_rt.clump_a = df_cli;
 
     # sync the environmental conditions per layer
-    prescribe_air!(spac, _df_co2, _df_atm, _df_tar, _df_vpd, _df_wnd);
-    prescribe_t_leaf!(spac, max(_df_tar, _df_tlf));
+    prescribe_air!(spac, df_co2, df_atm, df_tar, df_vpd, df_wnd);
+    prescribe_t_leaf!(spac, max(df_tar, df_tlf));
 
     # run the chunks below only when total radiation is higher than 10
-    if _df_dir + _df_dif < 10
+    if df_dir + df_dif < 10
         return nothing
     end;
 
     # update soil water matrices per layer
-    prescribe_swc!(spac, _df_sw1, _df_sw2, _df_sw3, _df_sw4);
+    prescribe_swc!(spac, df_sw1, df_sw2, df_sw3, df_sw4);
 
     # update soil albedo using FourBandsFittingHybrid
-    _method = FourBandsFittingHybrid();
-    fit_soil_mat!(spac.soil_opt, spac.wl_set, spac.swc[1], _method);
+    fit_soil_mat!(spac.soil_opt, spac.wl_set, spac.swc[1], FourBandsFittingHybrid());
 
     # update PAR related information
-    spac.in_rad.E_direct  .= deepcopies[1].E_direct  .* _df_dir ./ deepcopies[2];
-    spac.in_rad.E_diffuse .= deepcopies[1].E_diffuse .* _df_dif ./ deepcopies[3];
-    spac.angles.sza = min(88, zenith_angle(spac.latitude, _df_doy));
+    spac.in_rad.E_direct  .= deepcopies[1].E_direct  .* df_dir ./ deepcopies[2];
+    spac.in_rad.E_diffuse .= deepcopies[1].E_diffuse .* df_dif ./ deepcopies[3];
+    spac.angles.sza = min(88, zenith_angle(spac.latitude, df_doy));
     update_par!(spac);
 
     return nothing
-end
+end;
 
 
 """
 
-    update_gsw!(spac::SPACMono{FT}, sm::ESMMedlyn{FT}, ind::Int, δt::FT; β::FT = FT(1)) where {FT<:AbstractFloat}
+    non_steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
 
-Wrapper function to use prognostic_gsw!, given
-- `spac` Soil plant air continuum struct
-- `sm` Medlyn stomtal model
-- `ind` Canopy layer number
-- `δt` Time step
-- `β` Tuning factor
-
-"""
-function update_gsw!(spac::SPACMono{FT}, sm::ESMMedlyn{FT}, ind::Int, δt::FT; β::FT = FT(1)) where {FT<:AbstractFloat}
-    prognostic_gsw!(spac.plant_ps[ind], spac.envirs[ind], sm, β, δt);
-
-    return nothing
-end
-
-
-"""
-
-    run_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
-
-Run CliMA Land in a time step, given
+Run CliMA Land in a time step in non-steady-state mode, given
 - `spac` Soil plant air continuum struct
 - `dfr` Weather driver dataframe row
 - `ind` Time index
 
 """
-function run_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
+function non_steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
     # read the data out of dataframe row to reduce memory allocation
-    _df_dif::FT = dfr.RAD_DIF;
-    _df_dir::FT = dfr.RAD_DIR;
+    df_dif::FT = dfr.RAD_DIF;
+    df_dir::FT = dfr.RAD_DIR;
 
     # compute beta factor (based on Psoil, so canopy does not matter)
-    _βm = spac_beta_max(spac, beta);
+    # note here that
+    #     - if the beta is applied to g1 use it in the prognostic_gsw! function
+    #     - if the beta is applied to Vcmax, rescale Vcmax and use a beta = 1 in the stomatal_conductance function
+    # in this example, we assumed it is applied to g1
+    βm = spac_beta_max(spac, beta);
 
     # calculate leaf level flux per canopy layer
-    for _i_can in 1:spac.n_canopy
-        _iEN = spac.envirs[_i_can];
-        _iPS = spac.plant_ps[_i_can];
+    for i in 1:spac.n_canopy
+        iEN = spac.envirs[i];
+        iPS = spac.plant_ps[i];
 
         # set gsw to 0 or iterate for 30 times to find steady state solution
-        if _df_dir + _df_dif < 10
-            _iPS.APAR .= 0;
-            _iPS.g_sw .= 0;
-            gsw_control!(spac.photo_set, _iPS, _iEN);
+        if df_dir + df_dif < 10
+            iPS.APAR .= 0;
+            iPS.g_sw .= 0;
+            gsw_control!(spac.photo_set, iPS, iEN);
         else
             for _ in 1:30
-                gas_exchange!(spac.photo_set, _iPS, _iEN, GswDrive());
-                update_gsw!(spac, spac.stomata_model, _i_can, FT(120); β = _βm);
-                gsw_control!(spac.photo_set, _iPS, _iEN);
+                gas_exchange!(spac.photo_set, iPS, iEN, GswDrive());
+                prognostic_gsw!(iPS, iEN, spac.stomata_model, βm, FT(120));
+                gsw_control!(spac.photo_set, iPS, iEN);
             end;
         end;
     end;
 
     # calculate the SIF if there is sunlight
-    if _df_dir + _df_dif >= 10
+    if df_dir + df_dif >= 10
         update_sif!(spac);
         dfr.SIF683 = SIF_WL(spac.can_rad, spac.wl_set, FT(682.5));
         dfr.SIF740 = SIF_740(spac.can_rad, spac.wl_set);
@@ -327,7 +308,81 @@ function run_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinear
     dfr.F_GPP = GPP(spac);
 
     return nothing
-end
+end;
+
+
+"""
+
+    steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrame) where {FT<:AbstractFloat}
+
+Run CliMA Land in a time step in steady-state mode, given
+- `spac` Soil plant air continuum struct
+- `dfr` Weather driver dataframe row
+- `ind` Time index
+
+"""
+function steady_state_time_step!(spac::SPACMono{FT}, dfr::DataFrameRow, beta::BetaGLinearPsoil{FT}) where {FT<:AbstractFloat}
+    # read the data out of dataframe row to reduce memory allocation
+    df_dif::FT = dfr.RAD_DIF;
+    df_dir::FT = dfr.RAD_DIR;
+
+    # compute beta factor (based on Psoil, so canopy does not matter)
+    # note here that
+    #     - if the beta is applied to g1 use it in the prognostic_gsw! function
+    #     - if the beta is applied to Vcmax, rescale Vcmax and use a beta = 1 in the stomatal_conductance function
+    # in this example, we assumed it is applied to g1
+    βm = spac_beta_max(spac, beta);
+
+    # calculate leaf level flux per canopy layer
+    for i in 1:spac.n_canopy
+        iEN = spac.envirs[i];
+        iPS = spac.plant_ps[i];
+
+        # set gsw to 0 or iterate for 30 times to find steady state solution
+        if df_dir + df_dif < 10
+            iPS.APAR .= 0;
+            iPS.g_sw .= 0;
+            gsw_control!(spac.photo_set, iPS, iEN);
+        else
+            last_sum_ag = -1;
+            last_sum_gl = -1;
+            for _ in 1:30
+                gas_exchange!(spac.photo_set, iPS, iEN, GswDrive());
+                prognostic_gsw!(iPS, iEN, spac.stomata_model, βm, FT(120));
+                gsw_control!(spac.photo_set, iPS, iEN);
+                sum_ag = numerical∫(iPS.Ag, iPS.LAIx);
+                sum_gl = numerical∫(iPS.g_lw, iPS.LAIx);
+
+                # break if the solution is converged
+                if isapprox(sum_ag, last_sum_ag; rtol = 0.001) && isapprox(sum_gl, last_sum_gl; rtol = 0.001)
+                    break;
+                else
+                    last_sum_ag = sum_ag;
+                    last_sum_gl = sum_gl;
+                end;
+            end;
+        end;
+    end;
+
+    # calculate the SIF if there is sunlight
+    if df_dir + df_dif >= 10
+        update_sif!(spac);
+        dfr.SIF683 = SIF_WL(spac.can_rad, spac.wl_set, FT(682.5));
+        dfr.SIF740 = SIF_740(spac.can_rad, spac.wl_set);
+        dfr.SIF757 = SIF_WL(spac.can_rad, spac.wl_set, FT(758.7));
+        dfr.SIF771 = SIF_WL(spac.can_rad, spac.wl_set, FT(770.0));
+        dfr.NDVI   = NDVI(spac.can_rad, spac.wl_set);
+        dfr.EVI    = EVI(spac.can_rad, spac.wl_set);
+        dfr.NIRv   = NIRv(spac.can_rad, spac.wl_set);
+    end;
+
+    # save the total flux into the DataFrame
+    dfr.F_H2O = T_VEG(spac);
+    dfr.F_CO2 = CNPP(spac);
+    dfr.F_GPP = GPP(spac);
+
+    return nothing
+end;
 
 
 """
@@ -340,30 +395,35 @@ Run CliMA Land at a site for the enture year, given
 - `nc_out` File path to save the model output
 
 """
-function run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String) where {FT<:AbstractFloat}
-    _in_rad_bak = deepcopy(spac.in_rad);
-    _in_dir     = _in_rad_bak.E_direct' * spac.wl_set.dWL / 1000;
-    _in_dif     = _in_rad_bak.E_diffuse' * spac.wl_set.dWL / 1000;
-    _deepcopies = [_in_rad_bak, _in_dir, _in_dif];
-    _beta_g     = BetaGLinearPsoil{FT}();
+function run_model!(spac::SPACMono{FT}, df::DataFrame, nc_out::String; steady_state::Bool = false) where {FT<:AbstractFloat}
+    in_rad_bak = deepcopy(spac.in_rad);
+    in_dir     = in_rad_bak.E_direct' * spac.wl_set.dWL / 1000;
+    in_dif     = in_rad_bak.E_diffuse' * spac.wl_set.dWL / 1000;
+    deepcopies = [in_rad_bak, in_dir, in_dif];
+    beta_g     = BetaGLinearPsoil{FT}();
 
     # set up memory
-    _spac_mem = SPACMemory{FT}();
+    spac_mem = SPACMemory{FT}();
 
     # iterate through the time steps
-    for _dfr in eachrow(df)
-        prescribe_parameters!(spac, _dfr, _spac_mem, _deepcopies);
-        run_time_step!(spac, _dfr, _beta_g);
+    for dfr in eachrow(df)
+        prescribe_parameters!(spac, dfr, spac_mem, deepcopies);
+        if steady_state
+            steady_state_time_step!(spac, dfr, beta_g);
+        else
+            non_steady_state_time_step!(spac, dfr, beta_g);
+        end;
     end;
 
     # save simulation results to hard drive
     save_nc!(nc_out, df[:, DF_VARIABLES]);
 
     return nothing
-end
+end;
 
 
-@time dict = load("debug.jld2");
-@time wddf = prepare_wd(dict, "debug.nc");
+@time dict = load("$(@__DIR__)/debug.jld2");
+@time wddf = prepare_wd(dict, "$(@__DIR__)/debug.nc");
 @time spac = prepare_spac(dict);
-@time run_model!(spac, wddf, "debug.output.nc");
+@time run_model!(spac, wddf, "$(@__DIR__)/debug.output.ss.nc"; steady_state = true);
+@time run_model!(spac, wddf, "$(@__DIR__)/debug.output.nss.nc"; steady_state = false);

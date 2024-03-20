@@ -44,8 +44,8 @@ function thermal_fluxes!(
     (; nWL) = wls
 
     # 1. define some useful parameters
-    iLAI = LAI * Ω / nLayer;
-    tLAI = LAI / nLayer;
+    iLAI = LAI / nLayer;
+    ciiLAI = LAI * Ω / nLayer;
 
     #
     #
@@ -75,8 +75,8 @@ function thermal_fluxes!(
         for i=1:nLayer
             sigf    = ddf*le.ρ_LW + ddb*le.τ_LW
             sigb    = ddb*le.ρ_LW + ddf*le.τ_LW
-            τ_dd[i] = (1 - (1-sigf)*iLAI)
-            ρ_dd[i] = (sigb*iLAI)
+            τ_dd[i] = (1 - (1-sigf)*ciiLAI)
+            ρ_dd[i] = (sigb*ciiLAI)
             ϵ[i]    = (1 - τ_dd[i] - ρ_dd[i]);
         end
     elseif length(leaves)==nLayer
@@ -84,8 +84,8 @@ function thermal_fluxes!(
             le      = leaves[i]
             sigf    = ddf*le.ρ_LW + ddb*le.τ_LW
             sigb    = ddb*le.ρ_LW + ddf*le.τ_LW
-            τ_dd[i] = (1 - (1-sigf)*iLAI)
-            ρ_dd[i] = (sigb*iLAI)
+            τ_dd[i] = (1 - (1-sigf)*ciiLAI)
+            ρ_dd[i] = (sigb*ciiLAI)
             ϵ[i]    = (1 - τ_dd[i] - ρ_dd[i]);
         end
     else
@@ -93,8 +93,8 @@ function thermal_fluxes!(
         for i=1:nLayer
             sigf    = ddf*le.ρ_LW + ddb*le.τ_LW
             sigb    = ddb*le.ρ_LW + ddf*le.τ_LW
-            τ_dd[i] = (1 - (1-sigf)*iLAI)
-            ρ_dd[i] = (sigb*iLAI)
+            τ_dd[i] = (1 - (1-sigf)*ciiLAI)
+            ρ_dd[i] = (sigb*ciiLAI)
             ϵ[i]    = (1 - τ_dd[i] - ρ_dd[i]);
         end
     end
@@ -130,7 +130,7 @@ function thermal_fluxes!(
         # else
         # Do Planck curve, tbd
     end
-    S⁺[:] = tLAI * (fSun.*S_sun+(1 .-fSun).*S_shade)
+    S⁺[:] = iLAI * (fSun.*S_sun+(1 .-fSun).*S_shade)
     S⁻[:] = S⁺[:]
     soilEmission = K_STEFAN(FT) * (1 .- ρ_LW) * T^4
     # Run RT:
