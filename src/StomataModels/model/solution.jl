@@ -122,8 +122,6 @@ function solution_diff!(
         ps.Rd      *= _rat;
         ps.Vcmax25 *= _rat;
         ps.Vcmax   *= _rat;
-        ps.Vpmax25 *= _rat;
-        ps.Vpmax   *= _rat;
     end
 
     # calculate g_sw from stomatal model

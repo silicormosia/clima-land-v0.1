@@ -193,9 +193,6 @@ function update_VJRWW!(node::SPACMono{FT}, vcmax::FT; expo::FT = FT(NaN)) where 
         _iPS.ps.Vcmax     = vcmax;
         _iPS.ps.Vcmax25   = vcmax;
         _iPS.ps.Vcmax25WW = vcmax;
-        _iPS.ps.Vpmax     = vcmax;
-        _iPS.ps.Vpmax25   = vcmax;
-        _iPS.ps.Vpmax25WW = vcmax;
         _iPS.ps.Jmax      = vcmax * 1.67;
         _iPS.ps.Jmax25    = vcmax * 1.67;
         _iPS.ps.Jmax25WW  = vcmax * 1.67;
@@ -212,15 +209,12 @@ function update_VJRWW!(node::SPACMono{FT}, vcmax::FT; expo::FT = FT(NaN)) where 
     for _i_can in eachindex(node.plant_ps)
         _x_rt = exp( -expo * node.canopy_rt.LAI * (1 - _i_can / node.n_canopy) );
         node.plant_ps[_i_can].ps.Vcmax25WW *= _x_rt;
-        node.plant_ps[_i_can].ps.Vpmax25WW *= _x_rt;
         node.plant_ps[_i_can].ps.Jmax25WW  *= _x_rt;
         node.plant_ps[_i_can].ps.Rd25WW    *= _x_rt;
         node.plant_ps[_i_can].ps.Vcmax25   *= _x_rt;
-        node.plant_ps[_i_can].ps.Vpmax25   *= _x_rt;
         node.plant_ps[_i_can].ps.Jmax25    *= _x_rt;
         node.plant_ps[_i_can].ps.Rd25      *= _x_rt;
         node.plant_ps[_i_can].ps.Vcmax     *= _x_rt;
-        node.plant_ps[_i_can].ps.Vpmax     *= _x_rt;
         node.plant_ps[_i_can].ps.Jmax      *= _x_rt;
         node.plant_ps[_i_can].ps.Rd        *= _x_rt;
     end;

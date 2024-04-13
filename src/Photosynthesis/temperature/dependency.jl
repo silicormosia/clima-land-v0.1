@@ -169,16 +169,16 @@ end
 
 
 """
-    leaf_kpep!(td_set::ArrheniusTD{FT},
+    leaf_kpep!(td_set::Q10TD{FT},
                leaf::Leaf{FT}
     ) where {FT<:AbstractFloat}
 
 Update Kpep at leaf temperature, given
-- `td_set` [`ArrheniusTD`](@ref) type TD parameter set
+- `td_set` [`Q10TD`](@ref) type TD parameter set
 - `leaf` [`Leaf`](@ref) type struct
 """
 function leaf_kpep!(
-            td_set::ArrheniusTD{FT},
+            td_set::Q10TD{FT},
             leaf::Leaf{FT}
 ) where {FT<:AbstractFloat}
     leaf.Kpep = photo_TD_from_set(td_set, leaf.T);
@@ -224,27 +224,6 @@ function leaf_vcmax!(
             leaf::Leaf{FT}
 ) where {FT<:AbstractFloat}
     leaf.Vcmax = photo_TD_from_val(td_set, leaf.Vcmax25, leaf.T);
-
-    return nothing
-end
-
-
-
-
-"""
-    leaf_vpmax!(td_set::AbstractTDParameterSet{FT},
-                leaf::Leaf{FT}
-    ) where {FT<:AbstractFloat}
-
-Update leaf maximal PEP carboxylation rate at leaf temperature, given
-- `td_set` [`AbstractTDParameterSet`](@ref) type TD parameter set
-- `leaf` [`Leaf`](@ref) type struct
-"""
-function leaf_vpmax!(
-            td_set::AbstractTDParameterSet{FT},
-            leaf::Leaf{FT}
-) where {FT<:AbstractFloat}
-    leaf.Vpmax = photo_TD_from_val(td_set, leaf.Vpmax25, leaf.T);
 
     return nothing
 end
@@ -335,7 +314,6 @@ function leaf_temperature_dependence!(
         leaf.p_sat = saturation_vapor_pressure(leaf.T);
         leaf_rd!(photo_set.ReT, leaf);
         leaf_vcmax!(photo_set.VcT, leaf);
-        leaf_vpmax!(photo_set.VpT, leaf);
         leaf_kpep!(photo_set.KpT, leaf);
         leaf_kd!(leaf);
     end

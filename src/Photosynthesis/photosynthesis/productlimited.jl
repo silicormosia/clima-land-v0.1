@@ -27,7 +27,7 @@ function product_limited_rate!(
             photo_set::C3Cytochrome{FT},
             leaf::Leaf{FT}
 ) where {FT<:AbstractFloat}
-    (; p_i, Vcmax, Γ_star) = leaf;
+    (; p_i, Γ_star) = leaf;
     (; Eff_1, Eff_2) = photo_set;
 
     leaf.Ap = leaf.Vcmax / 2;
@@ -56,7 +56,7 @@ function product_limited_rate!(
             photo_set::C4ParaSet{FT},
             leaf::Leaf{FT}
 ) where {FT<:AbstractFloat}
-    leaf.Ap = leaf.Vpmax * leaf.p_i / (leaf.p_i + leaf.Kpep);
+    leaf.Ap = leaf.Kpep * leaf.Vcmax25 * leaf.p_i;
 
     return nothing
 end
@@ -69,20 +69,11 @@ function product_limited_rate!(
             leaf::Leaf{FT},
             envir::AirLayer{FT}
 ) where {FT<:AbstractFloat}
-    (; g_lc, Kpep, Rd, Vpmax) = leaf;
+    (; g_lc, Kpep, Rd, Vcmax25) = leaf;
     (; p_a, p_atm) = envir;
 
-    _a = Vpmax;
-    _d = Kpep;
-    _f = p_atm / g_lc * FT(1e-6);
-    _p = p_a;
-
-    _qa = _f;
-    _qb = _f*Rd - _p - _d - _a*_f;
-    _qc = _a*_p - Rd*(_p + _d);
-    _an = lower_quadratic(_qa, _qb, _qc);
-
-    leaf.Ap = _an + Rd;
+    _p_i = (FT(1e6) * g_lc * p_a + p_atm * Rd) / (p_atm * Kpep * Vcmax25 + FT(1e6) * g_lc);
+    leaf.Ap = Kpep * Vcmax25 * _p_i;
 
     return nothing
 end

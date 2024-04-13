@@ -2,7 +2,6 @@
     @testset "Structures" begin
         for FT in [Float32, Float64]
             for data_set in [ Photosynthesis.KcTDBernacchi(FT),
-                              Photosynthesis.VpmaxTDBoyd(FT),
                               C3CLM(FT),
                               C4CLM(FT),
                               AirLayer{FT}(),
@@ -14,7 +13,6 @@
                               Photosynthesis.VcmaxTDBernacchi(FT),
                               Photosynthesis.VomaxTDBernacchi(FT),
                               Photosynthesis.ΓStarTDBernacchi(FT),
-                              Photosynthesis.KpepTDBoyd(FT),
                               Photosynthesis.JmaxTDLeuning(FT),
                               Photosynthesis.VcmaxTDLeuning(FT),
                               Photosynthesis.JmaxTDBernacchi(FT),

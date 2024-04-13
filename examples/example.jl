@@ -144,7 +144,7 @@ function prepare_spac(dict::Dict; FT = Float64)
     # update soil color class from CLM dataset
     node.soil_opt.color = dict["soil_color"];
 
-    # update the Vcmax, Jmax, and Vpmax
+    # update the Vcmax and Jmax
     update_VJRWW!(node, nanmean(dict["vcmax"]));
 
     # initialize the canopy RT model

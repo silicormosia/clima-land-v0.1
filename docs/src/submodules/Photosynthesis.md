@@ -50,7 +50,6 @@ The temperature-dependent (TD) photosynthetic parameters include
 - ``R_\text{d}`` Dark respiration
 - ``V_\text{cmax}`` Maximal RuBP carboxylation rate
 - ``V_\text{omax}`` Maximal RuBP oxygenation rate
-- ``V_\text{pmax}`` Maximal PEP carboxylation rate
 - ``Γ^{*}`` CO₂ compensation point with the absence of dark respiration
 
 There are two typical types of temperature dependencies using the classic
@@ -75,7 +74,6 @@ KcTDBernacchi
 KcTDCLM
 KoTDBernacchi
 KoTDCLM
-KpepTDBoyd
 KpepTDCLM
 Q10TDAngiosperm
 Q10TDGymnosperm
@@ -85,7 +83,6 @@ VcmaxTDBernacchi
 VcmaxTDCLM
 VcmaxTDLeuning
 VomaxTDBernacchi
-VpmaxTDBoyd
 ΓStarTDBernacchi
 ΓStarTDCLM
 ```
@@ -187,7 +184,6 @@ leaf_ko!
 leaf_kpep!
 leaf_rd!
 leaf_vcmax!
-leaf_vpmax!
 leaf_Γstar!
 ```
 

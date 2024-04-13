@@ -73,7 +73,7 @@ Base.@kwdef mutable struct Leaf{FT<:AbstractFloat}
     Kc::FT = 0
     "RubisCO coefficient Ko `[Pa]`"
     Ko::FT = 0
-    "PEP coefficient Ko `[Pa]`"
+    "C4 Kpep used in CLM"
     Kpep::FT = 0
     "Michaelis-Menten's coefficient `[Pa]`"
     Km::FT = 0
@@ -85,10 +85,6 @@ Base.@kwdef mutable struct Leaf{FT<:AbstractFloat}
     Vcmax::FT = 60
     "Maximal carboxylation rate at 298.15 K `[μmol m⁻² s⁻¹]`"
     Vcmax25::FT = 60
-    "Maximal PEP carboxylation rate `[μmol m⁻² s⁻¹]`"
-    Vpmax::FT = 120
-    "Maximal PEP carboxylation rate at 298.15 K `[μmol m⁻² s⁻¹]`"
-    Vpmax25::FT = 120
     "CO₂ compensation point with the absence of Rd `[Pa]`"
     Γ_star::FT = 0
 
@@ -153,8 +149,6 @@ Base.@kwdef mutable struct Leaf{FT<:AbstractFloat}
     Rd25WW::FT = Rd25
     "Well watered maximal carboxylation rate at 298.15 K `[μmol m⁻² s⁻¹]`"
     Vcmax25WW::FT = Vcmax25
-    "Well watered maximal PEP carboxylation rate at 298.15 K `[μmol m⁻² s⁻¹]`"
-    Vpmax25WW::FT = Vpmax25
 
     # Fluorescence related
     "Total efficiency, incl. photorespiration `[mol CO₂ mol⁻¹ e-]`"

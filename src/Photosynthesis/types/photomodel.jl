@@ -88,8 +88,6 @@ mutable struct C4ParaSet{FT<:AbstractFloat} <: AbstractPhotoModelParaSet{FT}
     ReT::AbstractTDParameterSet{FT}
     "Vcmax temperature dependency"
     VcT::AbstractTDParameterSet{FT}
-    "Vpmax temperature dependency"
-    VpT::AbstractTDParameterSet{FT}
     "Fluorescence model"
     Flu::AbstractFluoModelParaSet{FT}
     "Vcmax25 and respiration correlation"

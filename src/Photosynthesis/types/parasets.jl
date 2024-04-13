@@ -40,34 +40,6 @@ VomaxTDBernacchi(FT) =
 ###############################################################################
 #
 # Temperature Dedenpdency Parameter sets
-# Data source: Boyd et al. (2001)
-# Temperature responses of C4 photosynthesis: biochemical analysis of Rubisco,
-# phosphoenolpyruvate carboxylase, and carbonic anhydrase in Setaria viridis
-#
-###############################################################################
-""" [`ArrheniusTD`](@ref) type Kpep TD from Boyd's data """
-KpepTDBoyd(FT) =
-    ArrheniusTD{FT}(16.0, 36300.0 / GAS_R(), 36300.0 / RT₂₅(FT));
-
-""" [`ArrheniusPeakTD`](@ref) type Vpmax TD from Boyd's data """
-function VpmaxTDBoyd(FT)
-    ΔHa_to_RT25::FT = 94800.0 / RT₂₅(FT);
-    ΔHd_to_R::FT = 73300.0 / GAS_R();
-    ΔSv_to_R::FT = 250.0   / GAS_R();
-    C::FT = 1 + exp( ΔSv_to_R - ΔHd_to_R/T₂₅(FT) );
-    return ArrheniusPeakTD{FT}(ΔHa_to_RT25, ΔHd_to_R, ΔSv_to_R, C)
-end
-
-
-
-
-
-
-
-
-###############################################################################
-#
-# Temperature Dedenpdency Parameter sets
 # Data source: Leuning (2002)
 # Temperature dependence of two parameters in a photosynthesis model
 #
@@ -132,10 +104,6 @@ KcTDCLM(FT) =
 KoTDCLM(FT) =
     ArrheniusTD{FT}(27840.0, 36380.0 / GAS_R(), 36380.0 / RT₂₅(FT));
 
-""" [`ArrheniusTD`](@ref) type Kpep TD """
-KpepTDCLM(FT) =
-    ArrheniusTD{FT}(    8.0, 36000.0 / GAS_R(), 36000.0 / RT₂₅(FT));
-
 """ [`ArrheniusTD`](@ref) type Γ* TD """
 ΓStarTDCLM(FT) =
     ArrheniusTD{FT}(  4.275, 37830.0 / GAS_R(), 37830.0 / RT₂₅(FT));
@@ -156,6 +124,11 @@ function JmaxTDCLM(FT)
     ΔSv_to_R::FT = 490.0    / GAS_R();
     C::FT = 1 + exp( ΔSv_to_R - ΔHd_to_R/T₂₅(FT) );
     return ArrheniusPeakTD{FT}(ΔHa_to_RT25, ΔHd_to_R, ΔSv_to_R, C)
+end
+
+""" [`Q10TD`](@ref) type Kpep TD """
+function KpepTDCLM(FT)
+    return Q10TD{FT}(0.2, 298.15, 2.0)
 end
 
 """ [`ArrheniusPeakTD`](@ref) type Respiration TD """
@@ -264,8 +237,7 @@ function C4CLM(FT)
     KpT = KpepTDCLM(FT);
     ReT = RespirationTDCLM(FT);
     VcT = VcmaxTDCLM(FT);
-    VpT = VpmaxTDBoyd(FT);
     Flu = FluorescenceVanDerTolDrought(FT);
     VR  = VtoRDefault(FT);
-    return C4ParaSet{FT}(KpT, ReT, VcT, VpT, Flu, VR)
+    return C4ParaSet{FT}(KpT, ReT, VcT, Flu, VR)
 end
