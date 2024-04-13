@@ -2,14 +2,14 @@
 
     A_GROSS(node::SPACMono{FT}) where {FT}
 
-Return the gross photosynthesis rate per layer, given
+Return the gross photosynthesis rate per layerm per ground area, given
 - `node` [`SPACMono`](@ref) type struct
 
 """
-A_GROSS(node::SPACMono{FT}) where {FT} = [FT[iPS.Ag' * iPS.LAIx for iPS in node.plant_ps],
-                                          FT[iPS.Ac' * iPS.LAIx for iPS in node.plant_ps],
-                                          FT[iPS.Aj' * iPS.LAIx for iPS in node.plant_ps],
-                                          FT[iPS.Ap' * iPS.LAIx for iPS in node.plant_ps]];
+A_GROSS(node::SPACMono{FT}) where {FT} = [FT[iPS.Ag' * iPS.LAIx * iPS.LA for iPS in node.plant_ps],
+                                          FT[iPS.Ac' * iPS.LAIx * iPS.LA for iPS in node.plant_ps],
+                                          FT[iPS.Aj' * iPS.LAIx * iPS.LA for iPS in node.plant_ps],
+                                          FT[iPS.Ap' * iPS.LAIx * iPS.LA for iPS in node.plant_ps]] ./ node.ga;
 
 
 """
