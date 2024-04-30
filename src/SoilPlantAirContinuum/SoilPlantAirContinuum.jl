@@ -12,8 +12,8 @@ using ..CanopyLayers: Canopy4RT, CanopyOpticals, CanopyRads, IncomingRadiation, 
 using ..Photosynthesis: AbstractPhotoModelParaSet, AirLayer, C3CLM, C3ParaSet, C4ParaSet, GCO₂Mode, Leaf, leaf_photosynthesis!, leaf_rd!, leaf_temperature_dependence!
 using ..PlantHydraulics: GrassLikeOrganism, PalmLikeOrganism, SteadyStateMode, TreeLikeOrganism, TreeSimple, create_grass, critical_flow, end_pressure, flow_profile!,
       pressure_profile!, roots_flow!, soil_p_25_swc, soil_swc, temperature_effects!
-using ..StomataModels: BetaGLinearPsoil, CanopyLayer, ESMBallBerry, ESMMedlyn, EmpiricalStomatalModel, GswDrive, OptimizationStomatalModel, gas_exchange!, gsw_control!, prognostic_gsw!,
-      stomatal_conductance, update_leaf_TP!, β_factor
+using ..StomataModels: BetaGLinearPsoil, BetaGLinearSWC, CanopyLayer, ESMBallBerry, ESMMedlyn, EmpiricalStomatalModel, GswDrive, OptimizationStomatalModel, gas_exchange!, gsw_control!,
+      prognostic_gsw!, stomatal_conductance, update_leaf_TP!, β_factor
 
 
 # define constants
