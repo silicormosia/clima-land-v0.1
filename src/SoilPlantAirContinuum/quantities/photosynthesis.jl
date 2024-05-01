@@ -20,10 +20,10 @@ Return the gross photosynthesis rate per layer per ground area, given
 - `node` [`SPACMono`](@ref) type struct
 
 """
-A_GROSS_RD(node::SPACMono{FT}) where {FT} = [FT[max(0, (iPS.Ag - iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
-                                             FT[max(0, (iPS.Ac - iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
-                                             FT[max(0, (iPS.Aj - iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
-                                             FT[max(0, (iPS.Ap - iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps]] ./ node.ga;
+A_GROSS_RD(node::SPACMono{FT}) where {FT} = [FT[max(0, (iPS.Ag .- iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
+                                             FT[max(0, (iPS.Ac .- iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
+                                             FT[max(0, (iPS.Aj .- iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps],
+                                             FT[max(0, (iPS.Ap .- iPS.ps.Rd)' * iPS.LAIx * iPS.LA) for iPS in node.plant_ps]] ./ node.ga;
 
 
 """
