@@ -56,6 +56,7 @@
             SoilPlantAirContinuum.layer_fluxes!(node);
             SoilPlantAirContinuum.layer_fluxes!(node, FT(30));
             ags = SoilPlantAirContinuum.A_GROSS(node);
+            ϕfp = SoilPlantAirContinuum.Φ_FP(node);
             @test PkgUtility.NaN_test(ags);
             @test PkgUtility.NaN_test(node);
             @test true;

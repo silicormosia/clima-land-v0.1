@@ -72,3 +72,23 @@ function GPP_RD(spac::SPACMono{FT}) where {FT<:AbstractFloat}
 
     return gpp / spac.ga
 end;
+
+
+"""
+    Φ_FP(spac::SPACMono{FT}) where {FT<:AbstractFloat}
+
+Return the cumulative quantum yields
+"""
+function Φ_FP(spac::SPACMono{FT}) where {FT<:AbstractFloat}
+    ppar::FT = 0;
+    ∑ϕfp::FT = 0;
+    ∑ϕpp::FT = 0;
+
+    for iPS in spac.plant_ps
+        ∑ϕfp += numerical∫(iPS.APAR .* iPS.φs, iPS.LAIx) * FT(1e-6) * spac.canopy_rt.LAI / spac.canopy_rt.nLayer;
+        ∑ϕpp += numerical∫(iPS.APAR .* iPS.φ, iPS.LAIx) * FT(1e-6) * spac.canopy_rt.LAI / spac.canopy_rt.nLayer;
+        ppar += numerical∫(iPS.APAR, iPS.LAIx) * FT(1e-6) * spac.canopy_rt.LAI / spac.canopy_rt.nLayer;
+    end;
+
+    return ∑ϕfp / ppar, ∑ϕpp / ppar
+end
